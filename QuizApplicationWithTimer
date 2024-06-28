@@ -1,0 +1,107 @@
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Scanner;
+import java.util.Timer;
+import java.util.TimerTask;
+
+class Question {
+    String questionText;
+    String[] options;
+    char correctAnswer;
+
+    public Question(String questionText, String[] options, char correctAnswer) {
+        this.questionText = questionText;
+        this.options = options;
+        this.correctAnswer = correctAnswer;
+    }
+}
+
+public class QuizApplication {
+    private static ArrayList<Question> questions = new ArrayList<>();
+    private static HashMap<Integer, Character> userAnswers = new HashMap<>();
+    private static int score = 0;
+    private static int currentQuestionIndex = 0;
+    private static final int QUESTION_TIME_LIMIT = 15; // seconds
+    private static Timer timer = new Timer();
+    private static Scanner scanner = new Scanner(System.in);
+
+    public static void main(String[] args) {
+        initializeQuestions();
+        startQuiz();
+        displayResults();
+    }
+
+    // Initialize questions
+    private static void initializeQuestions() {
+        questions.add(new Question("What is the capital of France?", new String[]{"A) Paris", "B) London", "C) Berlin", "D) Rome"}, 'A'));
+        questions.add(new Question("What is the largest planet in our solar system?", new String[]{"A) Earth", "B) Jupiter", "C) Saturn", "D) Mars"}, 'B'));
+        questions.add(new Question("Who wrote 'To Kill a Mockingbird'?", new String[]{"A) Mark Twain", "B) Harper Lee", "C) J.K. Rowling", "D) Jane Austen"}, 'B'));
+        questions.add(new Question("Which element has the chemical symbol 'O'?", new String[]{"A) Gold", "B) Oxygen", "C) Silver", "D) Iron"}, 'B'));
+        questions.add(new Question("What is the smallest unit of life?", new String[]{"A) Atom", "B) Molecule", "C) Cell", "D) Tissue"}, 'C'));
+    }
+
+    // Start the quiz
+    private static void startQuiz() {
+        System.out.println("Welcome to the Quiz!");
+        System.out.println("You have " + QUESTION_TIME_LIMIT + " seconds to answer each question.");
+        System.out.println("Good luck!\n");
+
+        for (int i = 0; i < questions.size(); i++) {
+            currentQuestionIndex = i;
+            displayQuestion(questions.get(i));
+            startQuestionTimer();
+            String userAnswer = scanner.nextLine().toUpperCase();
+            timer.cancel();
+            userAnswers.put(i, userAnswer.charAt(0));
+
+            if (userAnswer.charAt(0) == questions.get(i).correctAnswer) {
+                score++;
+            }
+        }
+    }
+
+    // Display a question and its options
+    private static void displayQuestion(Question question) {
+        System.out.println("\nQuestion " + (currentQuestionIndex + 1) + ": " + question.questionText);
+        for (String option : question.options) {
+            System.out.println(option);
+        }
+        System.out.print("Your answer (A/B/C/D): ");
+    }
+
+    // Start the timer for the current question
+    private static void startQuestionTimer() {
+        timer = new Timer();
+        TimerTask task = new TimerTask() {
+            public void run() {
+                System.out.println("\nTime's up! Moving to the next question.");
+                userAnswers.put(currentQuestionIndex, ' ');
+                System.out.print("Press Enter to continue...");
+                timer.cancel();
+            }
+        };
+        timer.schedule(task, QUESTION_TIME_LIMIT * 1000);
+    }
+
+    // Display the final results
+    private static void displayResults() {
+        System.out.println("\nQuiz Complete!");
+        System.out.println("Your score: " + score + "/" + questions.size());
+
+        System.out.println("\nDetailed Results:");
+        for (int i = 0; i < questions.size(); i++) {
+            Question question = questions.get(i);
+            char userAnswer = userAnswers.get(i);
+            System.out.println("\nQuestion " + (i + 1) + ": " + question.questionText);
+            System.out.println("Correct Answer: " + question.correctAnswer);
+            System.out.println("Your Answer: " + (userAnswer == ' ' ? "No answer" : userAnswer));
+            if (userAnswer == question.correctAnswer) {
+                System.out.println("Result: Correct");
+            } else {
+                System.out.println("Result: Incorrect");
+            }
+        }
+
+        System.out.println("\nThanks for playing!");
+    }
+}
